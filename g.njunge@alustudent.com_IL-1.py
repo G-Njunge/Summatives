@@ -15,6 +15,7 @@ A decision() function - Determines whether a student passes or fails.
 main() function - Arranges the methods and functions in a logical manner so that the program is executed succesfully
 
 """
+import sys
 
 class Assignments:
     #initializing these variables because I will use them  across methods
@@ -24,8 +25,11 @@ class Assignments:
         self.weight = None
         self.grade = None
         self.form_choice = None
-        self.form_weight = None
-        self.sum_weight = None
+        self.form_weight = 0
+        self.sum_weight = 0
+        self.choice = None
+        self.form_limit = 60
+        self.sum_limit = 40
     
     def InputValidation(self, value,input_type):
         value = value.strip()
@@ -40,35 +44,17 @@ class Assignments:
                 return False
             return True
         
-        if input_type == "category" or input_type == "form_choice":
+        if input_type == "category" or input_type == "form_choice" or input_type == "choice":
             if value in ["1","2"]:
                 return True
             else:
                 print("Invalid input please input a number that is either 1 or 2\n")
-                return False
-                
-        if input_type == "weight":
-            try: 
-                weight = int(value)
-            except ValueError:
-                print(" Your input should be an integer or float value")
-                return False
-            self.weight = int(self.weight)
-            if self.category == "1":
-                if 0 <= self.weight <= 60 - self.form_weight:
-                    return True
-            elif self.category == "2":
-                if 0 <= self.weight <= 40 - self.sum_weight:
-                    return True
-            else:
-                print("Your weight is out of allowed range")
-                return False
             
         return True
         
     def get_name(self):
            while True: 
-            self.name = input("Please input the assignment name:").strip() #re,oves any trailing white spaces
+            self.name = input("Please input the assignment name: ").strip() #removes any trailing white spaces
             if self.InputValidation(self.name,"name"):
                 break
         
@@ -77,40 +63,85 @@ class Assignments:
             self.category= input(f"Which category is the {self.name} assignment? Choose either 1 or 2\n1.Formative\n2.Summative\n")  
             if self.InputValidation(self.category,"category"):
                 break   
-
-    def get_weight(self):
-        self.form_weight = 0
-        self.sum_weight = 0
+    
+    
+    def get_form_weight(self):
+        if self.form_weight == self.form_limit:
+            print("Your weight is at a maximum, you cannot add any more formative assignments")
+            self.user_choice()
+        
+       #input validation for the formative weight     
         while True:
-            if self.category == "1":
-                form_range = (60-self.form_weight)
-                print(f"Total Formative weight: {self.form_weight}\nYour input should range between 0 and {form_range}")
-            else:
-                if self.category == "2":
-                    sum_range = (40 - self.sum_weight)
-                    print(f"Total Summative weight: {self.sum_weight}\nYour input should range between 0 and {sum_range}")
             
-            self.weight = input(f"Please input {self.name}'s weight: ")
-            if self.InputValidation(self.weight,"weight"):      
-                self.weight = int(self.weight)
-                self.form_weight = (self.form_weight + self.weight)
-            # if self.form_weight == 60:
-            #     print("You have reached the maximum weight of your formative assignments, you can no longer input any more assignmrnts in this category") 
-            #     self.form_choice = input(" Would you like to add another assignment in the summative category?\nChoose either 1 or 2\n1.Yes\n2.No")
-                    
-            #         if self.InputValidation(self.form_choice):
-            #             break 
-            #         if self.form_choice == "1":
-            #             self.assignment_details()
-            #         else:
-            #             break
+            self.weight= input(f"input {self.name}'s weight: ").strip()
+            if not self.weight.isdigit():
+                print("invalid input, please input a whole number")
+            elif not self.weight:
+                print("field is empty, please input a valid number")
+            elif not 0< int(self.weight) <= 60 :
+                print("Weight for a formative assignment should range from 0 to 60 please try again")
+            else :
+                form_range = (self.form_limit-self.form_weight)
+                self.form_weight += int(self.weight)
+                if self.form_weight > self.form_limit:
+                    print(f"Your total formative weight is more than 60, please input a value ranging from 0 to {form_range}")
+                    self.form_weight -= int(self.weight)
+                    self.get_form_weight()
+                elif self.form_weight == self.form_limit:
+                    print("Your assignment has been recorded, but you have already gotten to the max weight of 60.\nThis means you cannot add any more formative assignments")
+                    break
+                else:
+                    print("Your assignment has been recorded!")
+                break
+    def get_sum_weight(self): 
+        if self.sum_weight == self.sum_limit:
+            print("Your weight is at a maximum, you cannot add any more summative assignments")
+            self.user_choice()
+
+
+        #Input validation for the summative weight
+        while True:
+            self.weight= input(f"input {self.name}'s weight: ").strip()
+            if not self.weight.isdigit():
+                print("invalid input, please input a whole number")
+            elif not self.weight:
+                print("field is empty, please input a valid number")
+            elif not 0< int(self.weight) <= 40 :
+                    print(f"Weight for a summative assignment should range from 0 to {self.sum_limit} please try again")
+            else :
+                    sum_range = (self.sum_limit-self.sum_weight)
+                    self.sum_weight += int(self.weight)
+                    if self.sum_weight > self.sum_limit:
+                        print(f"Your total summative weight is more than {self.sum_limit}, please input a value ranging from 0 to {sum_range}")
+                        self.sum_weight -= int(self.weight)
+                        self.get_sum_weight()
+                    elif self.sum_weight == self.sum_limit:
+                        print(f"Your assignment has been recorded, but you have already gotten to the max weight of {self.sum_limit}.\nThis means you cannot add any more summative assignments")
+                        break
+                    else:
+                        print("Your assignment has been recorded!")
+                        break
+                
+    def user_choice(self):
+        while True:
+            self.choice = input("Would you like to input another assignment? Choose either 1 or 2\n1.Yes\n2.No(exit)\n")
+            self.InputValidation(self.choice, "choice")
+            if self.choice == "1":
+                self.assignment_details()
+            else:
+                print("Thank you for using assignment checker!")
+                sys.exit()
 
 
     def assignment_details(self):
         self.assign_name = self.get_name()
         self.assign_cat = self.get_category()
-        self.assign_weight = self.get_weight()
+        if self.category == "1":
+            self.get_form_weight()    
+        else:
+            self.get_sum_weight()
         self.grade = int(input(f"Enter the grade/100: "))
+        self.user_choice()
         
  
 
